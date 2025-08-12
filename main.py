@@ -5,6 +5,8 @@ import threading
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
+from dotenv import load_dotenv
+import os
 
 # VRChat OSC settings
 VRCHAT_IP = "127.0.0.1"
@@ -15,9 +17,9 @@ client = SimpleUDPClient(VRCHAT_IP, VRCHAT_PORT_SEND)
 scope = "user-read-playback-state"
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope=scope,
-    client_id="f6f5b75b5f39427faa7a2c00f43673b1",
-    client_secret="9c2080d705994a319c36abac16d03018",
-    redirect_uri="http://localhost:8888/callback"
+    client_id=os.getenv("client_id"),
+    client_secret=os.getenv("client_secret"),
+    redirect_uri=os.getenv("redirect_uri")
 ))
 
 update_lock = threading.Lock()
