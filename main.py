@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 from pythonosc.udp_client import SimpleUDPClient
 import threading
@@ -29,23 +30,9 @@ pause_until = 0
 typing_timer = None
 is_typing = False
 
-# --- GUI Setup ---
 root = tk.Tk()
 root.title("VRChat Spotify OSC")
-
-# Log window
-log_widget = ScrolledText(root, state='disabled', height=20, width=50)
-log_widget.pack(padx=10, pady=10, side="left")
-
-# Chat entry and send button frame
-entry_frame = tk.Frame(root)
-entry_frame.pack(padx=10, pady=(0,10), fill='x')
-
-chat_entry = tk.Entry(entry_frame, width=50)
-chat_entry.pack( expand=True, fill='x')
-chat_entry.bind("<Return>", lambda event: on_send_click())  # Send on Enter key
-chat_entry.bind("<Key>", lambda event: on_keypress(event))  # Handle typing indicator
-
+root.geometry("700x400")
 
 def log(message):
     log_widget.configure(state='normal')
@@ -102,10 +89,7 @@ def on_keypress(event):
 
     # Pause auto-update immediately
     auto_update = False
-    pause_until = time.time() + 9999  # big number so it won't auto-resume mid-typing
-
-send_button = tk.Button(entry_frame, text="Send", command=on_send_click)
-send_button.pack(side='left', padx=(5,0))
+    pause_until = time.time() + 5  # big number so it won't auto-resume mid-typing
 
 # --- Spotify update loop ---
 def send_spotify_track():
@@ -170,6 +154,44 @@ def spotify_update_loop():
 
 # Start the spotify update thread before the GUI mainloop
 threading.Thread(target=spotify_update_loop, daemon=True).start()
+
+
+#region Left frame: Log, Spotify info, chat input
+left_frame = ttk.Frame(root, padding=10)
+left_frame.pack(side='left', fill='both', expand=True)
+
+# Right frame: Controls
+right_frame = ttk.Frame(root, padding=10)
+right_frame.pack(side='right', fill='y')
+
+# Log widget (scrollable)
+log_widget = ScrolledText(left_frame, state='disabled', height=20, width=60)
+log_widget.pack(fill='both', expand=True)
+
+# Spotify info label
+spotify_info = ttk.Label(left_frame, text="No track playing", font=("Helvetica", 12, "bold"))
+spotify_info.pack(pady=(5, 10))
+
+# Chat input frame inside left_frame
+chat_frame = ttk.Frame(left_frame)
+chat_frame.pack(fill='x')
+
+chat_entry = ttk.Entry(chat_frame)
+chat_entry.pack(side='left', fill='x', expand=True)
+chat_entry.bind("<Return>", lambda event: on_send_click())
+chat_entry.bind("<Key>", lambda event: on_keypress(event))
+
+send_button = ttk.Button(chat_frame, text="Send", command=on_send_click)
+send_button.pack(side='left', padx=(5, 0))
+
+#endregion
+
+#region Right frame : Controls
+send_track_button = ttk.Button(right_frame, text="Send Current Track", command=send_spotify_track)
+send_track_button.pack(pady=5, fill='x')
+
+clear_log_button = ttk.Button(right_frame, text="Clear Log")
+clear_log_button.pack(pady=5, fill='x')
 
 # --- Start GUI ---
 root.mainloop()
